@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   backend:
-    image: ndiaye2024/backend:latest
+    image: kingwest1/backend:latest
     ports:
       - "5000:5000"
     environment:
@@ -12,7 +12,7 @@ services:
       - mongo
 
   frontend:
-    image: ndiaye2024/frontend:latest
+    image: kingwest1/frontend:latest
     ports:
       - "3000:80"
     environment:
