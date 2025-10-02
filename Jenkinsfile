@@ -8,15 +8,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                checkout scmGit(
-                    branches: [[name: '*/main']],
-                    extensions: [],
-                    userRemoteConfigs: [[
-                        credentialsId: 'king-github',
-                        url: 'https://github.com/KingW223/Jenkins-Test2.git'
-                    ]]
-                )
-                sh 'ls -la'
+                checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'king-github', url: 'https://github.com/KingW223/Jenkins-Test2.git']])
             }
         }
 
