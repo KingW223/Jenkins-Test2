@@ -5,6 +5,21 @@ pipeline {
         DOCKER_HUB_REPO = 'kingwest1'
     }
 
+    triggers {
+        // Pour que le pipeline démarre quand le webhook est reçu
+        GenericTrigger(
+            genericVariables: [
+                [key: 'ref', value: '$.ref'],
+                [key: 'pusher_name', value: '$.pusher.name'],
+                [key: 'commit_message', value: '$.head_commit.message']
+            ],
+            causeString: 'Push par $pusher_name sur $ref: "$commit_message"',
+            token: 'king-github',
+            printContributedVariables: true,
+            printPostContent: true
+        )
+    }
+    
     stages {
         stage('Checkout') {
             steps {
