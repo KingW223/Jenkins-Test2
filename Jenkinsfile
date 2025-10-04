@@ -54,6 +54,13 @@ pipeline {
             }
         }
 
+        stage('Clean Docker') {
+            steps {
+                sh 'docker container prune -f'
+                sh 'docker image prune -f'
+            }
+        }
+
         stage('Deploy with Docker Compose') {
             steps {
                 sh 'docker compose up -d'
