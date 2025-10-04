@@ -77,11 +77,10 @@ pipeline {
                 to: "naziftelecom2@gmail.com"
             )
         }
-    }
 
-    post {
         always {
             sh 'docker logout'
         }
     }
+
 }
