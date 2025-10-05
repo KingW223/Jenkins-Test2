@@ -23,7 +23,11 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'king-github', url: 'https://github.com/KingW223/Jenkins-Test2.git']])
+                checkout scmGit(
+                    branches: [[name: '*/main']],
+                    extensions: [],
+                    userRemoteConfigs: [[credentialsId: 'king-github', url: 'https://github.com/KingW223/Jenkins-Test2.git']]
+                )
             }
         }
 
@@ -34,7 +38,6 @@ pipeline {
                 }
             }
         }
-
 
         stage('Build Backend Image') {
             steps {
@@ -48,14 +51,12 @@ pipeline {
             }
         }
 
-
         stage('Push Images') {
             steps {
                 sh 'docker push $DOCKER_HUB_REPO/backend:latest'
                 sh 'docker push $DOCKER_HUB_REPO/frontend:latest'
             }
         }
-
 
         stage('Deploy with Docker Compose') {
             steps {
@@ -64,14 +65,6 @@ pipeline {
         }
     }
 
-        stage('Clean Docker') {
-            steps {
-                sh 'docker container prune -f'
-                sh 'docker image prune -f'
-            }
-        }
-
-    
     post {
         success {
             emailext(
@@ -87,11 +80,11 @@ pipeline {
                 to: "naziftelecom2@gmail.com"
             )
         }
-        
         always {
+            // Nettoyage Docker et logout après le pipeline
+            sh 'docker container prune -f'
+            sh 'docker image prune -f'
             sh 'docker logout'
         }
     }
-
-
 }
