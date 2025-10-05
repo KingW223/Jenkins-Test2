@@ -27,6 +27,15 @@ pipeline {
             }
         }
 
+        stage('Login to DockerHub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'king-hub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
+                }
+            }
+        }
+
+
         stage('Build Backend Image') {
             steps {
                 sh 'docker build -t $DOCKER_HUB_REPO/backend:latest ./mon-projet-express'
@@ -39,13 +48,6 @@ pipeline {
             }
         }
 
-        stage('Login to DockerHub') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'king-hub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
-                }
-            }
-        }
 
         stage('Push Images') {
             steps {
@@ -54,12 +56,6 @@ pipeline {
             }
         }
 
-        stage('Clean Docker') {
-            steps {
-                sh 'docker container prune -f'
-                sh 'docker image prune -f'
-            }
-        }
 
         stage('Deploy with Docker Compose') {
             steps {
@@ -67,6 +63,13 @@ pipeline {
             }
         }
     }
+
+        stage('Clean Docker') {
+            steps {
+                sh 'docker container prune -f'
+                sh 'docker image prune -f'
+            }
+        }
 
     
     post {
@@ -84,10 +87,11 @@ pipeline {
                 to: "naziftelecom2@gmail.com"
             )
         }
-
+        
         always {
             sh 'docker logout'
         }
     }
+
 
 }
