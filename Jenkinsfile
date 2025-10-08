@@ -39,7 +39,7 @@ pipeline {
             steps {
                 echo 'Analyse du code avec SonarQube...'
                 // Utilisation de la configuration globale SonarQube
-                withSonarQubeEnv('Sonarqube') {
+                withSonarQubeEnv('SonarQube') {
                     sh '''
                         sonar-scanner \
                             -Dsonar.projectKey=Jenkins-Test2 \
