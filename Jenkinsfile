@@ -5,8 +5,12 @@ pipeline {
         DOCKER_HUB_REPO = 'kingwest1'
     }
 
+    tools {
+        sonarQubeScanner 'SonarScanner'
+    }
+
     triggers {
-        // Pour que le pipeline démarre quand le webhook est reçu
+        // Déclenchement automatique via webhook GitHub
         GenericTrigger(
             genericVariables: [
                 [key: 'ref', value: '$.ref'],
@@ -19,20 +23,49 @@ pipeline {
             printPostContent: true
         )
     }
-    
+
     stages {
+
         stage('Checkout') {
             steps {
                 checkout scmGit(
                     branches: [[name: '*/main']],
                     extensions: [],
-                    userRemoteConfigs: [[credentialsId: 'king-github', url: 'https://github.com/KingW223/Jenkins-Test2.git']]
+                    userRemoteConfigs: [[
+                        credentialsId: 'king-github',
+                        url: 'https://github.com/KingW223/Jenkins-Test2.git'
+                    ]]
                 )
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                echo 'Analyse du code avec SonarQube...'
+                // Utilisation de la configuration globale SonarQube
+                withSonarQubeEnv('Sonarqube') {
+                    sh '''
+                        sonar-scanner \
+                            -Dsonar.projectKey=Jenkins-Test2 \
+                            -Dsonar.sources=. \
+                            -Dsonar.host.url=http://sonarqube:9000
+                    '''
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                echo 'Vérification du Quality Gate SonarQube...'
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
             }
         }
 
         stage('Login to DockerHub') {
             steps {
+                echo 'Connexion à Docker Hub...'
                 withCredentials([usernamePassword(credentialsId: 'king-hub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
                 }
@@ -41,18 +74,21 @@ pipeline {
 
         stage('Build Backend Image') {
             steps {
+                echo 'Construction de l’image backend...'
                 sh 'docker build -t $DOCKER_HUB_REPO/backend:latest ./mon-projet-express'
             }
         }
 
         stage('Build Frontend Image') {
             steps {
+                echo 'Construction de l’image frontend...'
                 sh 'docker build -t $DOCKER_HUB_REPO/frontend:latest ./'
             }
         }
 
         stage('Push Images') {
             steps {
+                echo 'Envoi des images vers Docker Hub...'
                 sh 'docker push $DOCKER_HUB_REPO/backend:latest'
                 sh 'docker push $DOCKER_HUB_REPO/frontend:latest'
             }
@@ -60,6 +96,7 @@ pipeline {
 
         stage('Deploy with Docker Compose') {
             steps {
+                echo 'Déploiement via Docker Compose...'
                 sh 'docker compose up -d'
             }
         }
@@ -68,23 +105,25 @@ pipeline {
     post {
         success {
             emailext(
-                subject: "Build SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                body: "Pipeline réussi\nDétails : ${env.BUILD_URL}",
+                subject: "✅ Build SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: "Pipeline réussi 🎉\nDétails : ${env.BUILD_URL}",
                 to: "naziftelecom2@gmail.com"
             )
         }
         failure {
             emailext(
-                subject: "Build FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                body: "Le pipeline a échoué\nDétails : ${env.BUILD_URL}",
+                subject: "❌ Build FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: "Le pipeline a échoué 😞\nDétails : ${env.BUILD_URL}",
                 to: "naziftelecom2@gmail.com"
             )
         }
         always {
-            // Nettoyage Docker et logout après le pipeline
-            sh 'docker container prune -f'
-            sh 'docker image prune -f'
-            sh 'docker logout'
+            echo 'Nettoyage des images et conteneurs Docker...'
+            sh '''
+                docker container prune -f
+                docker image prune -f
+                docker logout
+            '''
         }
     }
 }
