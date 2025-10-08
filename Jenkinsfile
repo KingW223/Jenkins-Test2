@@ -5,10 +5,6 @@ pipeline {
         DOCKER_HUB_REPO = 'kingwest1'
     }
 
-    tools {
-        sonarQubeScanner 'SonarScanner'
-    }
-
     triggers {
         // Déclenchement automatique via webhook GitHub
         GenericTrigger(
