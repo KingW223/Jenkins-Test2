@@ -43,7 +43,7 @@ pipeline {
                         sonar-scanner \
                         -Dsonar.projectKey=jenkins \
                         -Dsonar.sources=. \
-                        -Dsonar.host.url=http://sonarqube:9000
+                        -Dsonar.host.url=http://172.20.0.3:9000
                     '''
                 }
             }
