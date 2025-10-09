@@ -49,14 +49,14 @@ pipeline {
             }
         }
 
-        /*stage('Quality Gate') {
+        stage('Quality Gate') {
             steps {
                 echo 'Vérification du Quality Gate SonarQube...'
                 timeout(time: 5, unit: 'MINUTES') {
                     waitForQualityGate abortPipeline: false
                 }
             }
-        }*/
+        }
 
         stage('Login to DockerHub') {
             steps {
