@@ -41,9 +41,9 @@ pipeline {
                 // Utilisation de la configuration globale SonarQube
                 withSonarQubeEnv('SonarQube') {
                     sh '''
-                        sonar-scanner \
-                            -Dsonar.projectKey=jenkins-Test2 \
-                            -Dsonar.sources=. \
+                        sonar-scanner 
+                            -Dsonar.projectKey=jenkins-Test2 
+                            -Dsonar.sources=. 
                             -Dsonar.host.url=http://sonarqube:9000
                     '''
                 }
