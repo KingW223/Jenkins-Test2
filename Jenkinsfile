@@ -35,16 +35,15 @@ pipeline {
             }
         }
 
-        stage('SonarQube Analysis') {
+        stage('Analyse SonarQube') {
             steps {
                 echo 'Analyse du code avec SonarQube...'
-                // Utilisation de la configuration globale SonarQube
                 withSonarQubeEnv('SonarQube') {
                     sh '''
-                        sonar-scanner 
-                            -Dsonar.projectKey=jenkins-Test2 
-                            -Dsonar.sources=. 
-                            -Dsonar.host.url=http://sonarqube:9000
+                        sonar-scanner \
+                        -Dsonar.projectKey=jenkins \
+                        -Dsonar.sources=. \
+                        -Dsonar.host.url=http://sonarqube:9000
                     '''
                 }
             }
