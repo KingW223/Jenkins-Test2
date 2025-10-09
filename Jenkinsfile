@@ -43,7 +43,7 @@ pipeline {
                         sonar-scanner \
                         -Dsonar.projectKey=Jenkins-Test2 \
                         -Dsonar.sources=. \
-                        -Dsonar.host.url=http://sonarqube:9000
+                        -Dsonar.host.url=http://172.20.0.3:9000
                     '''
                 }
             }
@@ -52,7 +52,7 @@ pipeline {
         stage('Quality Gate') {
             steps {
                 echo 'Vérification du Quality Gate SonarQube...'
-                timeout(time: 5, unit: 'MINUTES') {
+                timeout(time: 1, unit: 'MINUTES') {
                     waitForQualityGate abortPipeline: true
                 }
             }
