@@ -41,7 +41,7 @@ pipeline {
                 withSonarQubeEnv('SonarQube') {
                     sh '''
                         sonar-scanner \
-                        -Dsonar.projectKey=jenkins \
+                        -Dsonar.projectKey=Jenkins-Test2 \
                         -Dsonar.sources=. \
                         -Dsonar.host.url=http://172.20.0.3:9000
                     '''
