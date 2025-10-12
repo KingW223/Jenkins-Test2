@@ -37,20 +37,6 @@ pipeline {
             }
         }
 
-        // ⚙️ Étape 2 : Configuration du Webhook SonarQube → Jenkins
-        stage('Configure SonarQube Webhook') {
-            steps {
-                script {
-                    echo "Configuration du webhook SonarQube vers Jenkins..."
-                    sh '''
-                        curl -u $SONAR_ADMIN_TOKEN: -X POST "http://sonarqube:9000/api/webhooks/create" \
-                            -d "name=Jenkins_QualityGate" \
-                            -d "url=http://jenkins2:8080/sonarqube-webhook/" \
-                        || echo "⚠️  Webhook déjà existant ou erreur ignorée."
-                    '''
-                }
-            }
-        }
 
         // 🔍 Étape 3 : Analyse de la qualité du code avec SonarQube
         stage('SonarQube Analysis') {
@@ -68,18 +54,9 @@ pipeline {
             }
         }
 
-        // ✅ Étape 4 : Vérification du Quality Gate
         stage('Quality Gate') {
             steps {
-                timeout(time: 3, unit: 'MINUTES') {
-                    script {
-                        def qg = waitForQualityGate(abortPipeline: false)
-                        echo "Quality Gate status: ${qg.status}"
-                        if (qg.status != 'OK') {
-                            echo "⚠️  Attention: Quality Gate en erreur, le pipeline continue malgré tout."
-                        }
-                    }
-                }
+                waitForQualityGate()
             }
         }
 
