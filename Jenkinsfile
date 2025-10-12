@@ -47,7 +47,7 @@ pipeline {
         }
 
         // 🔍 Étape 3 : Analyse de la qualité du code avec SonarQube
-        stage('SonarQube Analysis') {
+        /*stage('SonarQube Analysis') {
             steps {
                 echo 'Analyse du code avec SonarQube...'
                 withSonarQubeEnv('SonarQube') {
@@ -57,6 +57,25 @@ pipeline {
                             -Dsonar.sources=. \
                             -Dsonar.host.url=http://sonarqube:9000 \
                             -Dsonar.login=$SONAR_ADMIN_TOKEN
+                    '''
+                }
+            }
+        }*/
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube_Local') {
+                    sh '''
+                        sonar-scanner \
+                          -Dsonar.projectKey=express_mongo_react \
+                          -Dsonar.sources=. \
+                          -Dsonar.exclusions=**/node_modules/**,**/coverage/**,**/dist/**,**/build/** \
+                          -Dsonar.tests=. \
+                          -Dsonar.test.inclusions=**/*.test.js,**/*.spec.js \
+                          -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
+                          -Dsonar.newCode.referenceBranch=main \
+                          -Dsonar.host.url=http://sonarqube:9000 \
+                          -Dsonar.token=$SONAR_ADMIN_TOKEN
                     '''
                 }
             }
