@@ -56,7 +56,11 @@ pipeline {
 
         stage('Quality Gate') {
             steps {
-                waitForQualityGate()
+                echo 'Vérification du Quality Gate...'
+                // attend que l'analyse SonarQube soit terminée et récupère le status
+                timeout(time: 3, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
             }
         }
 
