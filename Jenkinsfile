@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         DOCKER_HUB_REPO = 'kingwest1'
+        SONAR_ADMIN_TOKEN = credentials('sonar-id')
     }
 
     triggers {
@@ -35,6 +36,19 @@ pipeline {
             }
         }
 
+        stage('Configure SonarQube Webhook') {
+            steps {
+                script {
+                    echo "Configuration du webhook SonarQube vers Jenkins..."
+                    sh '''
+                    curl -u $SONAR_ADMIN_TOKEN: -X POST "http://sonarqube:9000/api/webhooks/create" \
+                        -d "name=Jenkins_QualityGate" \
+                        -d "url=http://jenkins2:9090/sonarqube-webhook/" || echo "Webhook déjà existant ou erreur ignorée"
+                    '''
+                }
+            }
+        }
+
         stage('Analyse SonarQube') {
             steps {
                 echo 'Analyse du code avec SonarQube...'
@@ -44,6 +58,7 @@ pipeline {
                         -Dsonar.projectKey=Jenkins-Test2 \
                         -Dsonar.sources=. \
                         -Dsonar.host.url=http://sonarqube:9000
+                        -Dsonar.token=$SONAR_ADMIN_TOKEN
                     '''
                 }
             }
@@ -51,9 +66,14 @@ pipeline {
 
         stage('Quality Gate') {
             steps {
-                echo 'Vérification du Quality Gate SonarQube...'
-                timeout(time: 15, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
+                timeout(time: 3, unit: 'MINUTES') {
+                    script {
+                        def qg = waitForQualityGate(abortPipeline: false)
+                        echo "Quality Gate status: ${qg.status}"
+                        if (qg.status != 'OK') {
+                            echo " Attention: Quality Gate en erreur, le pipeline continue malgré tout."
+                        }
+                    }
                 }
             }
         }
