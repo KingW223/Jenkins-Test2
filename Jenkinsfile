@@ -23,6 +23,7 @@ pipeline {
 
     stages {
 
+        // 🧩 Étape 1 : Récupération du code source
         stage('Checkout') {
             steps {
                 checkout scmGit(
@@ -36,34 +37,38 @@ pipeline {
             }
         }
 
+        // ⚙️ Étape 2 : Configuration du Webhook SonarQube → Jenkins
         stage('Configure SonarQube Webhook') {
             steps {
                 script {
                     echo "Configuration du webhook SonarQube vers Jenkins..."
                     sh '''
-                    curl -u $SONAR_ADMIN_TOKEN: -X POST "http://sonarqube:9000/api/webhooks/create" \
-                        -d "name=Jenkins_QualityGate" \
-                        -d "url=http://jenkins2:9090/sonarqube-webhook/" || echo "Webhook déjà existant ou erreur ignorée"
+                        curl -u $SONAR_ADMIN_TOKEN: -X POST "http://sonarqube:9000/api/webhooks/create" \
+                            -d "name=Jenkins_QualityGate" \
+                            -d "url=http://jenkins2:9090/sonarqube-webhook/" \
+                        || echo "⚠️  Webhook déjà existant ou erreur ignorée."
                     '''
                 }
             }
         }
 
-        stage('Analyse SonarQube') {
+        // 🔍 Étape 3 : Analyse de la qualité du code avec SonarQube
+        stage('SonarQube Analysis') {
             steps {
                 echo 'Analyse du code avec SonarQube...'
                 withSonarQubeEnv('SonarQube') {
                     sh '''
                         sonar-scanner \
-                        -Dsonar.projectKey=Jenkins-Test2 \
-                        -Dsonar.sources=. \
-                        -Dsonar.host.url=http://sonarqube:9000
-                        -Dsonar.token=$SONAR_ADMIN_TOKEN
+                            -Dsonar.projectKey=Jenkins-Test2 \
+                            -Dsonar.sources=. \
+                            -Dsonar.host.url=http://sonarqube:9000 \
+                            -Dsonar.login=$SONAR_ADMIN_TOKEN
                     '''
                 }
             }
         }
 
+        // ✅ Étape 4 : Vérification du Quality Gate
         stage('Quality Gate') {
             steps {
                 timeout(time: 3, unit: 'MINUTES') {
@@ -71,13 +76,14 @@ pipeline {
                         def qg = waitForQualityGate(abortPipeline: false)
                         echo "Quality Gate status: ${qg.status}"
                         if (qg.status != 'OK') {
-                            echo " Attention: Quality Gate en erreur, le pipeline continue malgré tout."
+                            echo "⚠️  Attention: Quality Gate en erreur, le pipeline continue malgré tout."
                         }
                     }
                 }
             }
         }
 
+        // 🔑 Étape 5 : Connexion à Docker Hub
         stage('Login to DockerHub') {
             steps {
                 echo 'Connexion à Docker Hub...'
@@ -87,6 +93,7 @@ pipeline {
             }
         }
 
+        // 🛠️ Étape 6 : Construction de l’image backend
         stage('Build Backend Image') {
             steps {
                 echo 'Construction de l’image backend...'
@@ -94,6 +101,7 @@ pipeline {
             }
         }
 
+        // 🛠️ Étape 7 : Construction de l’image frontend
         stage('Build Frontend Image') {
             steps {
                 echo 'Construction de l’image frontend...'
@@ -101,14 +109,18 @@ pipeline {
             }
         }
 
+        // 📤 Étape 8 : Push des images vers Docker Hub
         stage('Push Images') {
             steps {
                 echo 'Envoi des images vers Docker Hub...'
-                sh 'docker push $DOCKER_HUB_REPO/backend:latest'
-                sh 'docker push $DOCKER_HUB_REPO/frontend:latest'
+                sh '''
+                    docker push $DOCKER_HUB_REPO/backend:latest
+                    docker push $DOCKER_HUB_REPO/frontend:latest
+                '''
             }
         }
 
+        // 🚀 Étape 9 : Déploiement via Docker Compose
         stage('Deploy with Docker Compose') {
             steps {
                 echo 'Déploiement via Docker Compose...'
@@ -117,6 +129,7 @@ pipeline {
         }
     }
 
+    // 📬 Étapes post-pipeline
     post {
         success {
             emailext(
