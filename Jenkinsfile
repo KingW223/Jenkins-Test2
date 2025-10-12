@@ -37,14 +37,6 @@ pipeline {
             }
         }
         
-        stage('Install dependencies') {
-            steps {
-                script {
-                    // Installation des dépendances à la racine du projet
-                    sh 'npm install'
-                }
-            }
-        }
 
         // 🔍 Étape 3 : Analyse de la qualité du code avec SonarQube
         /*stage('SonarQube Analysis') {
