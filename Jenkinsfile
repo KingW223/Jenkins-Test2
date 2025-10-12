@@ -64,10 +64,21 @@ pipeline {
 
         stage('Quality Gate') {
             steps {
-                echo 'Vérification du Quality Gate...'
-                // attend que l'analyse SonarQube soit terminée et récupère le status
                 timeout(time: 3, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
+                    script {
+                        // abortPipeline: true va arrêter le pipeline si QG échoue
+                        def qg = waitForQualityGate(abortPipeline: true)
+                        echo "═══════════════════════════════════════"
+                        echo "Quality Gate status: ${qg.status}"
+                        echo "Quality Gate used: testgate"
+                        echo "═══════════════════════════════════════"
+                        
+                        if (qg.status != 'OK') {
+                            error "Quality Gate failed: ${qg.status}"
+                        } else {
+                            echo "✓ Quality Gate PASSED"
+                        }
+                    }
                 }
             }
         }
