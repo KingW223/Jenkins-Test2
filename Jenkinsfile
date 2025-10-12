@@ -92,7 +92,7 @@ pipeline {
                         echo "Quality Gate used: testgate"
                         echo "═══════════════════════════════════════"
                         
-                        if (qg.status == 'OK') {
+                        if (qg.status != 'OK') {
                             error "Quality Gate failed: ${qg.status}"
                         } else {
                             echo "✓ Quality Gate PASSED"
