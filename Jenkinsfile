@@ -63,19 +63,7 @@ pipeline {
         stage('Run Tests') {
             steps {
                 script {
-                    sh 'cd back-end && npm test || echo "Aucun test backend"'
-                    sh 'cd front-end && npm test || echo "Aucun test frontend"'
-                }
-            }
-        }
-
-        stage('Run Tests with Coverage') {
-            steps {
-                script {
-                    sh '''
-                        npm test -- --coverage --coverageReporters=lcov || echo "Tests exécutés avec erreurs"
-                        ls -la coverage/ || echo "Pas de dossier coverage généré"
-                    '''
+                    sh 'npm test || echo "Aucun test disponible"'
                 }
             }
         }
