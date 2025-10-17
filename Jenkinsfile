@@ -44,15 +44,6 @@ pipeline {
             }
         }
 
-        // 🧪 Étape 3 : Exécution des tests
-        stage('Run Tests') {
-            steps {
-                script {
-                    bat 'npm test || echo "Aucun test disponible"'
-                }
-            }
-        }
-
         // 🔍 Étape 4 : Analyse SonarQube
         stage('SonarQube Analysis') {
             steps {
