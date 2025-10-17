@@ -36,57 +36,44 @@ pipeline {
                 )
             }
         }
-        
 
-        // 🔍 Étape 3 : Analyse de la qualité du code avec SonarQube
-        /*stage('SonarQube Analysis') {
-            steps {
-                echo 'Analyse du code avec SonarQube...'
-                withSonarQubeEnv('SonarQube') {
-                    sh '''
-                        sonar-scanner \
-                            -Dsonar.projectKey=Jenkins-Test2 \
-                            -Dsonar.sources=. \
-                            -Dsonar.host.url=http://sonarqube:9000 \
-                            -Dsonar.login=$SONAR_ADMIN_TOKEN
-                    '''
-                }
-            }
-        }*/
-        
+        // 📦 Étape 2 : Installation des dépendances
         stage('Install dependencies') {
             steps {
-                sh 'npm install'
+                bat 'npm install'
             }
         }
 
+        // 🧪 Étape 3 : Exécution des tests
         stage('Run Tests') {
             steps {
                 script {
-                    sh 'npm test || echo "Aucun test disponible"'
+                    bat 'npm test || echo "Aucun test disponible"'
                 }
             }
         }
 
+        // 🔍 Étape 4 : Analyse SonarQube
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('SonarQube') {
-                    sh '''
-                        sonar-scanner \
-                          -Dsonar.projectKey=express_mongo_react \
-                          -Dsonar.sources=. \
-                          -Dsonar.exclusions=**/node_modules/**,**/coverage/**,**/dist/**,**/build/** \
-                          -Dsonar.tests=. \
-                          -Dsonar.test.inclusions=**/*.test.js,**/*.spec.js \
-                          -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
-                          -Dsonar.newCode.referenceBranch=main \
-                          -Dsonar.host.url=http://sonarqube:9000 \
-                          -Dsonar.token=$SONAR_ADMIN_TOKEN
-                    '''
+                    bat """
+                        sonar-scanner ^
+                          -Dsonar.projectKey=express_mongo_react ^
+                          -Dsonar.sources=. ^
+                          -Dsonar.exclusions=**/node_modules/**,**/coverage/**,**/dist/**,**/build/** ^
+                          -Dsonar.tests=. ^
+                          -Dsonar.test.inclusions=**/*.test.js,**/*.spec.js ^
+                          -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info ^
+                          -Dsonar.newCode.referenceBranch=main ^
+                          -Dsonar.host.url=http://sonarqube:9000 ^
+                          -Dsonar.token=%SONAR_ADMIN_TOKEN%
+                    """
                 }
             }
         }
 
+        // ✅ Étape 5 : Quality Gate
         stage('Quality Gate') {
             steps {
                 timeout(time: 3, unit: 'MINUTES') {
@@ -95,48 +82,50 @@ pipeline {
             }
         }
 
-        // 🔑 Étape 5 : Connexion à Docker Hub
+        // 🔑 Étape 6 : Connexion à Docker Hub
         stage('Login to DockerHub') {
             steps {
                 echo 'Connexion à Docker Hub...'
                 withCredentials([usernamePassword(credentialsId: 'king-hub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
+                    bat '''
+                        echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
+                    '''
                 }
             }
         }
 
-        // 🛠️ Étape 6 : Construction de l’image backend
+        // 🛠️ Étape 7 : Construction de l’image backend
         stage('Build Backend Image') {
             steps {
                 echo 'Construction de l’image backend...'
-                sh 'docker build -t $DOCKER_HUB_REPO/backend:latest ./mon-projet-express'
+                bat 'docker build -t %DOCKER_HUB_REPO%/backend:latest ./mon-projet-express'
             }
         }
 
-        // 🛠️ Étape 7 : Construction de l’image frontend
+        // 🛠️ Étape 8 : Construction de l’image frontend
         stage('Build Frontend Image') {
             steps {
                 echo 'Construction de l’image frontend...'
-                sh 'docker build -t $DOCKER_HUB_REPO/frontend:latest ./'
+                bat 'docker build -t %DOCKER_HUB_REPO%/frontend:latest ./'
             }
         }
 
-        // 📤 Étape 8 : Push des images vers Docker Hub
+        // 📤 Étape 9 : Push des images vers Docker Hub
         stage('Push Images') {
             steps {
                 echo 'Envoi des images vers Docker Hub...'
-                sh '''
-                    docker push $DOCKER_HUB_REPO/backend:latest
-                    docker push $DOCKER_HUB_REPO/frontend:latest
+                bat '''
+                    docker push %DOCKER_HUB_REPO%/backend:latest
+                    docker push %DOCKER_HUB_REPO%/frontend:latest
                 '''
             }
         }
 
-        // 🚀 Étape 9 : Déploiement via Docker Compose
+        // 🚀 Étape 10 : Déploiement via Docker Compose
         stage('Deploy with Docker Compose') {
             steps {
                 echo 'Déploiement via Docker Compose...'
-                sh 'docker compose up -d'
+                bat 'docker compose up -d'
             }
         }
     }
@@ -159,7 +148,7 @@ pipeline {
         }
         always {
             echo 'Nettoyage des images et conteneurs Docker...'
-            sh '''
+            bat '''
                 docker container prune -f
                 docker image prune -f
                 docker logout
