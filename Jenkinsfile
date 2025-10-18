@@ -48,21 +48,21 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('SonarQube') {
-                    bat """
-                        sonar-scanner.bat ^
-                          -Dsonar.projectKey=express_mongo_react ^
-                          -Dsonar.sources=. ^
-                          -Dsonar.exclusions=**/node_modules/**,**/coverage/**,**/dist/**,**/build/** ^
-                          -Dsonar.tests=. ^
-                          -Dsonar.test.inclusions=**/*.test.js,**/*.spec.js ^
-                          -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info ^
-                          -Dsonar.newCode.referenceBranch=main ^
-                          -Dsonar.host.url=http://sonarqube:9000 ^
-                          -Dsonar.token=%SONAR_ADMIN_TOKEN%
-                    """
+                    script {
+                        // Appel automatique du scanner configuré dans Jenkins
+                        bat """
+                            ${tool 'SonarScanner'}/bin/sonar-scanner.bat ^
+                              -Dsonar.projectKey=express_mongo_react ^
+                              -Dsonar.sources=. ^
+                              -Dsonar.exclusions=**/node_modules/**,**/coverage/**,**/dist/**,**/build/** ^
+                              -Dsonar.host.url=http://sonarqube:9000 ^
+                              -Dsonar.token=%SONAR_ADMIN_TOKEN%
+                        """
+                    }
                 }
             }
         }
+
 
         // ✅ Étape 5 : Quality Gate
         stage('Quality Gate') {
