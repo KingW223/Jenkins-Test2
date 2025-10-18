@@ -55,7 +55,7 @@ pipeline {
                               -Dsonar.projectKey=express_mongo_react ^
                               -Dsonar.sources=. ^
                               -Dsonar.exclusions=**/node_modules/**,**/coverage/**,**/dist/**,**/build/** ^
-                              -Dsonar.host.url=http://sonarqube:9000 ^
+                              -Dsonar.host.url=http://localhost:9000 ^
                               -Dsonar.token=%SONAR_ADMIN_TOKEN%
                         """
                     }
