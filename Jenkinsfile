@@ -49,7 +49,7 @@ pipeline {
             steps {
                 withSonarQubeEnv('SonarQube') {
                     bat """
-                        sonar-scanner ^
+                        sonar-scanner.bat ^
                           -Dsonar.projectKey=express_mongo_react ^
                           -Dsonar.sources=. ^
                           -Dsonar.exclusions=**/node_modules/**,**/coverage/**,**/dist/**,**/build/** ^
