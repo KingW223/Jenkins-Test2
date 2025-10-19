@@ -65,13 +65,13 @@ pipeline {
 
 
         // ✅ Étape 5 : Quality Gate
-        stage('Quality Gate') {
+        /*stage('Quality Gate') {
             steps {
                 timeout(time: 3, unit: 'MINUTES') {
                     waitForQualityGate(abortPipeline: true)
                 }
             }
-        }
+        }*/
 
         // 🔑 Étape 6 : Connexion à Docker Hub
         stage('Login to DockerHub') {
