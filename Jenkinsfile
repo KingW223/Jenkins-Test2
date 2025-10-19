@@ -120,6 +120,15 @@ pipeline {
             }
         }
     }
+    
+        stage('Test Kubernetes') {
+            steps {
+                withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
+                    bat 'kubectl get nodes'
+                }
+            }
+        }
+
 
     // 📬 Étapes post-pipeline
     post {
